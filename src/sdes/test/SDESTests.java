@@ -19,6 +19,27 @@ public class SDESTests extends TestCase {
   }
   
   @Test
+  public void testSubstitutor() {
+    assertEquals(0, 1);
+  }
+  
+  @Test
+  public void testBitIntConversion() {
+    byte[] testBits = { 1, 0, 1, 0 };
+    assertEquals(10, SDES.bitsToInt(testBits));
+    int a = 2;
+    int b = 3;
+    byte[] expectedA = { 1, 0 };
+    byte[] expectedB = { 1, 1 };
+    byte[] doneA = SDES.intToBits(a);
+    byte[] doneB = SDES.intToBits(b);
+    assertEquals(expectedA[0], doneA[0]);
+    assertEquals(expectedA[1], doneA[1]);
+    assertEquals(expectedB[0], doneB[0]);
+    assertEquals(expectedB[1], doneB[1]);
+  }
+  
+  @Test
   public void testKeyGenerator() {
     byte[] inputKey = { 1, 0, 1, 0, 0, 0, 0, 0, 1, 0 };
     byte[][] roundKeys = SDES.getKeys(inputKey);
@@ -36,7 +57,19 @@ public class SDESTests extends TestCase {
   
   @Test
   public void testCircularShift() {
-    assertEquals(0, 1);
+  	byte[] baseArray = { 1, 0, 1, 1 };
+  	byte[] left3Array = { 1, 1, 0, 1 };
+  	byte[] right2Array = { 1, 1, 1, 0 };
+      
+  	byte[] leftedArray = SDES.circularShift(baseArray, -3);
+ 
+  	for(int i = 0; i < 4; i++) {
+  	  assertEquals(leftedArray[i], left3Array[i]);
+  	}
+  	
+  	for(int i = 0; i < 4; i++) {
+      assertEquals(SDES.circularShift(baseArray, 2)[i], right2Array[i]);
+    }
   }
   
   @Test

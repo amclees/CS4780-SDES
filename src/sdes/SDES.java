@@ -9,6 +9,18 @@ public class SDES {
   public static final int[] finalPermutation = { 3, 0, 2, 4, 6, 1, 7, 5 };
   public static final int[] inExpansion = { 3, 0, 1, 2, 1, 2, 3, 0 };
   public static final int[] outCompression = { 1, 3, 2, 0 };
+  public static final int[][] sBox1 = { 
+      { 1, 0, 3, 2 },
+      { 3, 2, 1, 0 },
+      { 0, 2, 1, 3 },
+      { 3, 1, 3, 2 }
+  };
+  public static final int[][] sBox2 = { 
+      { 0, 1, 2, 3 },
+      { 2, 0, 1, 3 },
+      { 3, 0, 1, 0 },
+      { 2, 1, 0, 3 }
+  };
   
   public static byte[] Encrypt(byte[] rawkey, byte[] plaintext) {
     return null;
@@ -16,6 +28,32 @@ public class SDES {
   
   public static byte[] Decrypt(byte[] rawkey, byte[] ciphertext) {
     return null;
+  }
+  
+  public static int bitsToInt(byte[] bits) {
+    int value = 0;
+    for(int i = 0; i < bits.length; i++) {
+      value += bits[i] * Math.pow(2, bits.length - 1 - i);
+    }
+    return value;
+  }
+  
+  public static byte[] intToBits(int value) {
+    if(value > 3 || value < 0) return null;
+    byte[] bits = { 0, 0 };
+    if(value == 1) bits[1] = 1;
+    if(value == 2) bits[0] = 1;
+    if(value == 3) {
+      bits[0] = 1;
+      bits[1] = 1;
+    }
+    
+    return bits;
+  }
+  
+  public static byte[] substitute(byte[] input, byte[][] sBox) {
+    byte[][] split = split(input);
+    return intToBits(sBox[bitsToInt(split[0])][bitsToInt(split[1])]);
   }
 
   public static byte[] permute(byte[] input, int[] pBox) {
@@ -48,12 +86,12 @@ public class SDES {
   public static byte[] circularShift(byte[] input, int shifts) {
     byte[] shifted = new byte[input.length];
     
-    for(int i = 0; i < input.length - 1; i++) {
+    for(int i = 0; i < input.length; i++) {
       int shiftedPosition = (i + shifts) % input.length;
       if(shiftedPosition < 0) shiftedPosition += input.length;
-      shifted[i] = input[shiftedPosition];
+      shifted[shiftedPosition] = input[i];
     }
-
+    
     return shifted;
   }
   
@@ -64,31 +102,12 @@ public class SDES {
   
   public static byte[] combine(byte[] a, byte[] b) {
     byte[] c = new byte[a.length + b.length];
-    int j = 0;
-    int k = 0;
+    
     for(int i = 0; i < c.length; i++) {
-      try {
-        if(a[j] < b[k]) {
-          c[i] = a[j];
-          j++;
-          continue;
-        } 
-      } catch(IndexOutOfBoundsException ex) {}
-      try {
-      if(a[j] > b[k]) {
-        c[i] = b[k];
-        k++;
-        continue;
-      }
-      } catch(IndexOutOfBoundsException ex) {}
-      if(j < a.length) {
-        c[i] = a[j];
-        j++;
-      } else {
-        c[i] = b[k];
-        k++;
-      }
+      if(i < a.length) c[i] = a[i];
+      else c[i] = b[i - a.length];
     }
+    
     return c;
   }
 }
