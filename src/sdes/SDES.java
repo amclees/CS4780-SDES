@@ -23,11 +23,52 @@ public class SDES {
   };
   
   public static byte[] Encrypt(byte[] rawkey, byte[] plaintext) {
-    return null;
+    byte[] permutedPlaintext = permute(plaintext, initialPermutation);
+    byte[][] keys = getKeys(rawkey);
+    
+    byte[] round1Result = swap(mixKey(permutedPlaintext, keys[0]));
+    byte[] round2Result = mixKey(round1Result, keys[1]);
+    
+    byte[] ciphertext = permute(round2Result, finalPermutation);
+    
+    return ciphertext;
   }
   
   public static byte[] Decrypt(byte[] rawkey, byte[] ciphertext) {
+    byte[] permutedCiphertext = permute(ciphertext, initialPermutation);
+    byte[][] keys = getKeys(rawkey);
+    
+    byte[] round1Result = mixKey(permutedCiphertext, keys[1]);
+    byte[] round2Result = swap(mixKey(round1Result, keys[0]));
+    
+    byte[] plaintext = permute(round2Result, finalPermutation);
+    
+    return plaintext;
+  }
+  
+  public static byte[] mixKey(byte[] input, byte[] key) {
+    // fsubk in notes
     return null;
+  }
+  
+  public static byte[] getXorElement(byte[] right, byte[] key) {
+    // F(R, SK) in notes
+    return null;
+  }
+  
+  public static byte[] swap(byte[] input) {
+    byte[][] split = split(input);
+    return combine(split[1], split[0]);
+  }
+  
+  public static byte[] xor(byte[] input1, byte[] input2) {
+    if(input1.length != input2.length) return null;
+    byte[] output = new byte[input1.length];
+    for(int i = 0; i < input1.length; i++) {
+      if(input1[i] == input2[i]) output[i] = 0;
+      else output[i] = 1;
+    }
+    return output;
   }
   
   public static int bitsToInt(byte[] bits) {
@@ -38,22 +79,24 @@ public class SDES {
     return value;
   }
   
-  public static byte[] intToBits(int value) {
-    if(value > 3 || value < 0) return null;
-    byte[] bits = { 0, 0 };
-    if(value == 1) bits[1] = 1;
-    if(value == 2) bits[0] = 1;
-    if(value == 3) {
-      bits[0] = 1;
-      bits[1] = 1;
+  public static byte[] intToBits(int value, int bitsLength) {
+    if(value > (Math.pow(2, bitsLength) - 1)) return null;
+    byte[] bits = new byte[bitsLength];
+    for(int i = 0; i < bits.length; i++) {
+      int placeValue = (int)Math.pow(2, bits.length - 1 - i);
+      if(value - placeValue < 0) {
+        bits[i] = 0;
+      } else {
+        value -= placeValue;
+        bits[i] = 1;
+      }
     }
-    
     return bits;
   }
   
-  public static byte[] substitute(byte[] input, byte[][] sBox) {
+  public static byte[] substitute(byte[] input, int[][] sBox) {
     byte[][] split = split(input);
-    return intToBits(sBox[bitsToInt(split[0])][bitsToInt(split[1])]);
+    return intToBits(sBox[bitsToInt(split[0])][bitsToInt(split[1])], 2);
   }
 
   public static byte[] permute(byte[] input, int[] pBox) {

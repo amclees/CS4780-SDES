@@ -4,8 +4,17 @@ import org.junit.Test;
 
 import junit.framework.TestCase;
 import sdes.SDES;
+import sdes.attack.SDESBruteforce;
 
 public class SDESTests extends TestCase {
+  
+  @Test
+  public void testCasciiUtil() {
+    String toEncode = "HELLO, THIS IS A MESSAGE. IS IT, BY CHANCE, ENCODED 'PROPERLY'?";
+    byte[][] encoded = SDESBruteforce.encodeCASCII(toEncode.toCharArray());
+    String decoded = new String(SDESBruteforce.decodeCASCII(encoded));
+    assertTrue(toEncode.equals(decoded));
+  }
   
   @Test
   public void testPermutor() { 
@@ -20,7 +29,38 @@ public class SDESTests extends TestCase {
   
   @Test
   public void testSubstitutor() {
-    assertEquals(0, 1);
+    byte[] input = { 1, 0, 0, 1 };
+    byte[] expectedOutput = { 1, 0 };
+    byte[] output = SDES.substitute(input, SDES.sBox1);
+   
+    assertEquals(expectedOutput[0], output[0]);
+    assertEquals(expectedOutput[1], output[1]);
+  }
+  
+  @Test
+  public void testReverser() {
+    byte[] input = { 1, 1, 0, 1 };
+    byte[] expected = { 1, 0, 1, 1 };
+    byte[] reversed = SDESBruteforce.reverse(input);
+    assertTrue(bitsEqual(expected, reversed));
+  }
+  
+  @Test
+  public void testSwapper() {
+    byte[] input = { 1, 0, 0, 1, 1, 1, 1, 0 };
+    byte[] expectedOutput = { 1, 1, 1, 0, 1, 0, 0, 1 };
+    byte[] output = SDES.swap(input);
+    assertTrue(bitsEqual(expectedOutput, output));
+  }
+  
+  @Test
+  public void testXor() {
+    byte[] input1 = { 1, 0, 0, 1, 1, 0, 1, 0 };
+    byte[] input2 = { 0, 0, 1, 0, 1, 1, 0, 0 };
+    byte[] expectedOutput = { 1, 0, 1, 1, 0, 1, 1, 0 };
+    byte[] output = SDES.xor(input1, input2);
+    
+    assertTrue(bitsEqual(expectedOutput, output));
   }
   
   @Test
@@ -31,8 +71,8 @@ public class SDESTests extends TestCase {
     int b = 3;
     byte[] expectedA = { 1, 0 };
     byte[] expectedB = { 1, 1 };
-    byte[] doneA = SDES.intToBits(a);
-    byte[] doneB = SDES.intToBits(b);
+    byte[] doneA = SDES.intToBits(a, 2);
+    byte[] doneB = SDES.intToBits(b, 2);
     assertEquals(expectedA[0], doneA[0]);
     assertEquals(expectedA[1], doneA[1]);
     assertEquals(expectedB[0], doneB[0]);
@@ -105,4 +145,22 @@ public class SDESTests extends TestCase {
     }
   }
   
+  @Test
+  public void testSDESDecryption() {
+    byte[] key = { 1, 1, 1, 0, 0, 0, 1, 1, 1, 0 };
+    byte[] ciphertext = { 1, 1, 0, 0, 1, 1, 0, 0 };
+    byte[] expectedPlaintext = { 1, 0, 1, 0, 1, 0, 1, 0};
+    byte[] plaintext = SDES.Decrypt(key, ciphertext);
+    
+    assertTrue(bitsEqual(expectedPlaintext, plaintext));
+  }
+  
+  public boolean bitsEqual(byte[] b1, byte[] b2) {
+    if(b1.length != b2.length) return false;
+    for(int i = 0; i < b1.length; i++) {
+      if(b1[i] != b2[i]) return false;
+    }
+    return true;
+  }
+
 }
