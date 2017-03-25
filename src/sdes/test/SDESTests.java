@@ -17,6 +17,17 @@ public class SDESTests extends TestCase {
   }
   
   @Test
+  public void testCasciiParse() {
+    String toTest = "101100101001101000";
+    char[] charToTest = toTest.toCharArray();
+    byte[][] parsed = SDESBruteforce.parseCASCII(charToTest);
+    byte[][] expected = { { 1, 0, 1, 1, 0 }, { 0, 1, 0, 1, 0 }, { 0, 1, 1, 0, 1 } };
+    for(int i = 0; i < expected.length; i++) {
+     assertTrue(bitsEqual(parsed[i], expected[i]));
+    }
+  }
+  
+  @Test
   public void testPermutor() { 
     byte[] testInput = { 1, 0, 1, 0, 1 };
     int[] testPBox = { 0, 3, 2 };
@@ -126,10 +137,10 @@ public class SDESTests extends TestCase {
     byte[] expectedCiphertext3 = { 0, 1, 1, 1, 0, 0, 0, 0 };
     byte[] expectedCiphertext4 = { 0, 0, 0, 0, 0, 1, 0, 0 };
     
-    byte[] ciphertext1 = SDES.Encrypt(plaintext124, key1);
-    byte[] ciphertext2 = SDES.Encrypt(plaintext124, key23);
-    byte[] ciphertext3 = SDES.Encrypt(plaintext3, key23);
-    byte[] ciphertext4 = SDES.Encrypt(plaintext124, key4);
+    byte[] ciphertext1 = SDES.Encrypt(key1, plaintext124);
+    byte[] ciphertext2 = SDES.Encrypt(key23, plaintext124);
+    byte[] ciphertext3 = SDES.Encrypt(key23, plaintext3);
+    byte[] ciphertext4 = SDES.Encrypt(key4, plaintext124);
     
     for(int i = 0; i < ciphertext1.length; i++) {
       assertEquals(ciphertext1[i], expectedCiphertext1[i]);

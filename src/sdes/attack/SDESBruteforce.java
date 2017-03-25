@@ -4,7 +4,7 @@ import sdes.SDES;
 
 public class SDESBruteforce {
   public static byte[][] encodeCASCII(char[] chars) {
-    byte[][] encoded = new byte[chars.length][8];
+    byte[][] encoded = new byte[chars.length][5];
     for(int i = 0; i < chars.length; i++) {
       int asciiValue = (int)chars[i];
       int casciiValue = -1;
@@ -18,7 +18,7 @@ public class SDESBruteforce {
         default: casciiValue = asciiValue - 64; break;
       }
       if(casciiValue < 0 || casciiValue > 31) return null;
-      byte[] codedByte = reverse(SDES.intToBits(casciiValue, 8));
+      byte[] codedByte = reverse(SDES.intToBits(casciiValue, 5));
       encoded[i] = codedByte;
     }
     return encoded;
@@ -42,6 +42,21 @@ public class SDESBruteforce {
       chars[i] = (char)asciiValue;
     }
     return chars;
+  }
+  
+  public static byte[][] parseCASCII(char[] toParse) {
+    int padded = toParse.length % 5;
+    byte[][] parsed = new byte[(toParse.length - padded) / 5][5];
+    int currentByte = 0;
+    for(int i = 0; i < toParse.length - padded; i += 5) {
+      int totalValue = 0;
+      for(int j = i; j < i + 5; j++) {
+       int placeValue = toParse[j] == '0' ? 0 : 1;
+       totalValue += placeValue * Math.pow(2, i + 4 - j); 
+      }
+      parsed[currentByte++] = SDES.intToBits(totalValue, 5);
+    }
+    return parsed;
   }
   
   /* 

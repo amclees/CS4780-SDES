@@ -48,12 +48,20 @@ public class SDES {
   
   public static byte[] mixKey(byte[] input, byte[] key) {
     // fsubk in notes
-    return null;
+    byte[][] sides = split(input);
+    sides[0] = xor(sides[0], getXorElement(sides[1], key));
+    
+    return combine(sides[0], sides[1]);
   }
   
   public static byte[] getXorElement(byte[] right, byte[] key) {
     // F(R, SK) in notes
-    return null;
+    byte[] expandedAdded = xor(permute(right, inExpansion), key);
+    byte[][] sides = split(expandedAdded);
+    sides[0] = substitute(sides[0], sBox1);
+    sides[1] = substitute(sides[1], sBox2);
+    
+    return permute(combine(sides[0], sides[1]), outCompression);
   }
   
   public static byte[] swap(byte[] input) {
@@ -109,7 +117,6 @@ public class SDES {
   
   public static byte[][] getKeys(byte[] key) {
     byte[][] keys = new byte[2][8];
-    
     byte[] permutedKey = permute(key, initialKeyPermutation);
     
     byte[][] splitKey = split(permutedKey);
