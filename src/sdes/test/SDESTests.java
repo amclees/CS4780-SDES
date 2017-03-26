@@ -39,9 +39,19 @@ public class SDESTests extends TestCase {
   }
   
   @Test
+  public void testPermutorInvert() { 
+    byte[] testInput = { 1, 0, 1, 0, 1, 0, 1, 0 };
+    byte[] middle = SDES.permute(testInput, SDES.initialPermutation);
+    byte[] output = SDES.permute(middle, SDES.finalPermutation);
+    for(int i = 0; i < testInput.length; i++) {
+      assertEquals(testInput[i], output[i]);
+    }
+  }
+  
+  @Test
   public void testSubstitutor() {
     byte[] input = { 1, 0, 0, 1 };
-    byte[] expectedOutput = { 1, 0 };
+    byte[] expectedOutput = { 1, 1 }; // corrected output test
     byte[] output = SDES.substitute(input, SDES.sBox1);
    
     assertEquals(expectedOutput[0], output[0]);
@@ -108,17 +118,17 @@ public class SDESTests extends TestCase {
   
   @Test
   public void testCircularShift() {
-  	byte[] baseArray = { 1, 0, 1, 1 };
-  	byte[] left3Array = { 1, 1, 0, 1 };
-  	byte[] right2Array = { 1, 1, 1, 0 };
+    byte[] baseArray = { 1, 0, 1, 1 };
+    byte[] left3Array = { 1, 1, 0, 1 };
+    byte[] right2Array = { 1, 1, 1, 0 };
       
-  	byte[] leftedArray = SDES.circularShift(baseArray, -3);
+    byte[] leftedArray = SDES.circularShift(baseArray, -3);
  
-  	for(int i = 0; i < 4; i++) {
-  	  assertEquals(leftedArray[i], left3Array[i]);
-  	}
-  	
-  	for(int i = 0; i < 4; i++) {
+    for(int i = 0; i < 4; i++) {
+      assertEquals(leftedArray[i], left3Array[i]);
+    }
+    
+    for(int i = 0; i < 4; i++) {
       assertEquals(SDES.circularShift(baseArray, 2)[i], right2Array[i]);
     }
   }
@@ -133,7 +143,7 @@ public class SDESTests extends TestCase {
     byte[] plaintext3 = { 0, 1, 0, 1, 0, 1, 0, 1 };
     
     byte[] expectedCiphertext1 = { 0, 0, 0, 1, 0, 0, 0, 1 };
-    byte[] expectedCiphertext2 = { 1, 1, 0, 0, 1, 1, 0, 0 };
+    byte[] expectedCiphertext2 = { 1, 1, 0, 0, 1, 0, 1, 0 };
     byte[] expectedCiphertext3 = { 0, 1, 1, 1, 0, 0, 0, 0 };
     byte[] expectedCiphertext4 = { 0, 0, 0, 0, 0, 1, 0, 0 };
     
@@ -158,12 +168,80 @@ public class SDESTests extends TestCase {
   
   @Test
   public void testSDESDecryption() {
-    byte[] key = { 1, 1, 1, 0, 0, 0, 1, 1, 1, 0 };
-    byte[] ciphertext = { 1, 1, 0, 0, 1, 1, 0, 0 };
-    byte[] expectedPlaintext = { 1, 0, 1, 0, 1, 0, 1, 0};
-    byte[] plaintext = SDES.Decrypt(key, ciphertext);
-    
-    assertTrue(bitsEqual(expectedPlaintext, plaintext));
+  byte[] key = { 1, 1, 1, 0, 0, 0, 1, 1, 1, 0 };
+  byte[] ciphertext = { 1, 1, 0, 0, 1, 0, 1, 0 };
+  byte[] expectedPlaintext = { 1, 0, 1, 0, 1, 0, 1, 0};
+  byte[] plaintext = SDES.Decrypt(key, ciphertext);
+      
+  assertTrue(bitsEqual(expectedPlaintext, plaintext));
+  }
+  
+  @Test
+  public void testSDESEncryptDecrypt(){
+    int testCount = 8;
+    // System.out.println("Encrypt > Decrypt Test ( " + testCount + " random runs ):");
+    for(int i = 0; i < testCount; i++) {
+      // System.out.println("Trial " + i + ":");
+      assertTrue(testSDESende());
+      // System.out.println("");
+    }
+  }
+  
+  public boolean testSDESende(){
+    byte[] key = randomGen(10);
+    // printArray(key);
+    byte[] plaintext = randomGen(8);
+    // printArray(plaintext);
+    byte[] ciphertext = SDES.Encrypt(key, plaintext);
+    // printArray(ciphertext);
+    byte[] result = SDES.Decrypt(key, ciphertext);
+    // printArray(result);
+    return bitsEqual(plaintext,result);
+  }
+  
+  public byte[] randomGen(int ranSize){
+    byte[] output = new byte[ranSize];
+    for(int i = 0; i < output.length; i++)
+      output[i] = (byte)(Math.random()*2);
+    return output;
+  }
+  
+  @Test
+  public void testSDESLongForm() {
+  System.out.println("Long Form Encryption Test:");
+  byte[] key = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
+  byte[] plaintext = { 1, 0, 1, 0, 1, 0, 1, 0 };
+  System.out.print("Plain: ");
+  printArray(plaintext);
+  
+  byte[] initperm = SDES.permute(plaintext, SDES.initialPermutation);
+  System.out.print("IPerm: ");
+  printArray(initperm);
+  
+  byte[][] keys = SDES.getKeys(key);
+  System.out.print("Keys0: ");
+  printArray(keys[0]);
+  System.out.print("Keys1: ");
+  printArray(keys[1]);
+  
+  byte[] round1Result = SDES.mixKey(initperm, keys[0]);
+  System.out.print("Rnd1R: ");
+  printArray(round1Result);
+  
+  byte[] rnd1swp = SDES.swap(round1Result);
+  System.out.print("Rnd1S: ");
+  printArray(rnd1swp);
+  
+  byte[] round2Result = SDES.mixKey(rnd1swp, keys[1]);
+  System.out.print("Rnd2R: ");
+  printArray(round2Result);
+  
+  byte[] ciphertext = SDES.permute(round2Result, SDES.finalPermutation);
+  System.out.print("Ciphr: ");
+  printArray(ciphertext);
+  
+  byte[] expectedCiphertext = { 0, 0, 0, 0, 0, 1, 0, 0 };
+  assertTrue(bitsEqual(expectedCiphertext,ciphertext));
   }
   
   public boolean bitsEqual(byte[] b1, byte[] b2) {
@@ -172,6 +250,12 @@ public class SDESTests extends TestCase {
       if(b1[i] != b2[i]) return false;
     }
     return true;
+  }
+  
+  public void printArray(byte[] input){
+    for(int i = 0; i < input.length; i++)
+      System.out.print(input[i]);
+    System.out.println();
   }
 
 }
