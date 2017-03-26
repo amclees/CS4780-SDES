@@ -253,6 +253,86 @@ public class SDESTests extends TestCase {
     
     byte[] expectedCiphertext = { 0, 0, 0, 0, 0, 1, 0, 0 };
     assertTrue(bitsEqual(expectedCiphertext,ciphertext));
+    System.out.println();
+  }
+  
+  /*
+1 0000000000     00000000     ?
+2 1111111111     11111111     ?
+3 0000011111     00000000     ?
+4 0000011111     11111111     ?
+5 1000101110     ?            00011100
+6 1000101110     ?            11000010
+7 0010011111     ?            10011101
+8 0010011111     ?            10010000
+  */
+  
+  @Test
+  public void testSDESresults(){
+  byte[] key1  = {0,0,0,0,0,0,0,0,0,0};
+  byte[] key2  = {1,1,1,1,1,1,1,1,1,1};
+  byte[] key34 = {0,0,0,0,0,1,1,1,1,1};
+  byte[] key56 = {1,0,0,0,1,0,1,1,1,0};
+  byte[] key78 = {0,0,1,0,0,1,1,1,1,1};
+  
+  byte[] plaintext13 = {0,0,0,0,0,0,0,0};
+  byte[] plaintext24 = {1,1,1,1,1,1,1,1};
+  
+  byte[] ciphertext5 = {0,0,0,1,1,1,0,0};
+  byte[] ciphertext6 = {1,1,0,0,0,0,1,0};
+  byte[] ciphertext7 = {1,0,0,1,1,1,0,1};
+  byte[] ciphertext8 = {1,0,0,1,0,0,0,0};
+  
+  System.out.println("Raw Key\t\tPlaintext\tCiphertext");
+  printTableRow(key1,plaintext13,SDES.Encrypt(key1,plaintext13));
+  printTableRow(key2,plaintext24,SDES.Encrypt(key2,plaintext24));
+  printTableRow(key34,plaintext13,SDES.Encrypt(key34,plaintext13));
+  printTableRow(key34,plaintext24,SDES.Encrypt(key34,plaintext24));
+  printTableRow(key56,SDES.Decrypt(key56,ciphertext5),ciphertext5);
+  printTableRow(key56,SDES.Decrypt(key56,ciphertext6),ciphertext6);
+  printTableRow(key78,SDES.Decrypt(key78,ciphertext7),ciphertext7);
+  printTableRow(key78,SDES.Decrypt(key78,ciphertext8),ciphertext8);
+  System.out.println();
+  }
+  
+  /*
+1 0000000000     0000000000     00000000     ?
+2 1000101110     0110101110     11010111     ?
+3 1000101110     0110101110     10101010     ?
+4 1111111111     1111111111     10101010     ?
+5 1000101110     0110101110     ?            11100110
+6 1011101111     0110101110     ?            01010000
+7 0000000000     0000000000     ?            10000000
+8 1111111111     1111111111     ?            10010010
+  */
+  
+  @Test
+  public void testTripleSDESresults(){
+    byte[] keya17b17 = {0,0,0,0,0,0,0,0,0,0};
+    byte[] keya235   = {1,0,0,0,1,0,1,1,1,0};
+    byte[] keyb2356  = {0,1,1,0,1,0,1,1,1,0};
+    byte[] keya48b48 = {1,1,1,1,1,1,1,1,1,1};
+    byte[] keya6     = {1,0,1,1,1,0,1,1,1,1};
+    
+    byte[] plaintext1  = {0,0,0,0,0,0,0,0};
+    byte[] plaintext2  = {1,1,0,1,0,1,1,1};
+    byte[] plaintext34 = {1,0,1,0,1,0,1,0};
+    
+    byte[] ciphertext5 = {1,1,1,0,0,1,1,0};
+    byte[] ciphertext6 = {0,1,0,1,0,0,0,0};
+    byte[] ciphertext7 = {1,0,0,0,0,0,0,0};
+    byte[] ciphertext8 = {1,0,0,1,0,0,1,0};
+    
+    System.out.println("Raw Key A\tRaw Key B\tPlaintext\tCiphertext");
+    printTableRow(keya17b17,keya17b17,plaintext1,TripleSDES.Encrypt(keya17b17,keya17b17,plaintext1));
+    printTableRow(keya235,keyb2356,plaintext2,TripleSDES.Encrypt(keya235,keyb2356,plaintext2));
+    printTableRow(keya235,keyb2356,plaintext34,TripleSDES.Encrypt(keya235,keyb2356,plaintext34));
+    printTableRow(keya48b48,keya48b48,plaintext34,TripleSDES.Encrypt(keya48b48,keya48b48,plaintext34));
+    printTableRow(keya235,keyb2356,TripleSDES.Decrypt(keya235,keyb2356,ciphertext5),ciphertext5);
+    printTableRow(keya6,keyb2356,TripleSDES.Decrypt(keya6,keyb2356,ciphertext6),ciphertext6);
+    printTableRow(keya17b17,keya17b17,TripleSDES.Decrypt(keya17b17,keya17b17,ciphertext7),ciphertext7);
+    printTableRow(keya48b48,keya48b48,TripleSDES.Decrypt(keya48b48,keya48b48,ciphertext8),ciphertext8);
+    System.out.println();
   }
   
   public boolean bitsEqual(byte[] b1, byte[] b2) {
@@ -268,5 +348,17 @@ public class SDESTests extends TestCase {
       System.out.print(input[i]);
     System.out.println();
   }
-
+  
+  public void printArrayNoLn(byte[] input){
+    for(int i = 0; i < input.length; i++)
+      System.out.print(input[i]);
+  }
+  
+  public void printTableRow(byte[] ... arrays){
+  for(byte[] b : arrays){
+    printArrayNoLn(b);
+    System.out.print("\t");
+  }
+  System.out.println("");
+  }
 }
