@@ -20,8 +20,12 @@ public class SDESBruteforce {
   }
   
   public static void CASCIIEncryption(Scanner sc) {
-    System.out.println("Enter the bit representation of your key:");
+    System.out.println("Enter the bit representation of your key (10 bits):");
     char[] input = sc.next().toCharArray();
+    if(input.length != 10) {
+      System.out.println("Invalid key length, quitting.");
+      return;
+    }
     byte[] key = new byte[input.length];
     for(int i = 0; i < input.length; i++) {
       if(input[i] == '0') key[i] = 0;
@@ -36,11 +40,21 @@ public class SDESBruteforce {
     char[] plaintext = sc.next().toUpperCase().toCharArray();
     
     byte[][] encoded = encodeCASCII(plaintext);
+    byte[] toEncrypt = padCASCII(encoded);
+    System.out.println("Your padded plaintext is:\n" + bitsToString(toEncrypt));
+    byte[][] toEncryptBlocks = blockify(toEncrypt, 8);
+    byte[][] ciphertextBlocks = new byte[toEncryptBlocks.length][8];
+    for(int i = 0; i < toEncryptBlocks.length; i++) {
+      ciphertextBlocks[i] = SDES.Encrypt(key, toEncryptBlocks[i]);
+    }
+    byte[] ciphertext = flatten(ciphertextBlocks);
     
+    System.out.println("Your ciphertext is:");
+    System.out.println(bitsToString(ciphertext));
   }
   
   public static byte[] padCASCII(byte[][] encodedCASCII) {
-    int padding = 8 - ((encodedCASCII.length * 5) % 8);
+    int padding = (8 - ((encodedCASCII.length * 5) % 8)) % 8;
     byte[] padded = new byte[padding + (encodedCASCII.length * 5)];
     for(int i = 0; i < encodedCASCII.length; i++) {
       for(int j = 0; j < 5; j++) {
@@ -110,6 +124,16 @@ public class SDESBruteforce {
     return parsed;
   }
   
+  public static byte[] parseBits(char[] bits) {
+    byte[] parsed = new byte[bits.length];
+    for(int i = 0; i < bits.length; i++) {
+      if(bits[i] == '0') parsed[i] = 0;
+      else if(bits[i] == '1') parsed[i] = 1;
+      else return null;
+    }
+    return parsed;
+  }
+  
   /* 
    * This is necessary due to the "endianness" of CASCII. 
    * Endianness usually refers to bytes, but means bits in this context. 
@@ -120,6 +144,33 @@ public class SDESBruteforce {
       reversed[i] = input[input.length - 1 - i];
     }
     return reversed;
+  }
+  
+  public static byte[] flatten(byte[][] square) {
+    int rowLength = square[0].length;
+    byte[] flat = new byte[rowLength * square.length];
+    for(int i = 0; i < flat.length; i++) {
+      flat[i] = square[i / rowLength][i % rowLength];
+    }
+    return flat;
+  }
+  
+  public static byte[][] blockify(byte[] flat, int blockSize) {
+    int padding = (blockSize - (flat.length % blockSize)) % blockSize;
+    int rows = (flat.length / blockSize) + (padding == 0 ? 0 : 1);
+    byte[][] blocks = new byte[rows][blockSize];
+    for(int i = 0; i < flat.length; i++) {
+      blocks[i / blockSize][i % blockSize] = flat[i];
+    }
+    return blocks;
+  }
+  
+  public static String bitsToString(byte[] bits) {
+    char[] chars = new char[bits.length];
+    for(int i = 0; i < chars.length; i++) {
+      chars[i] = bits[i] == 1 ? '1' : '0';
+    }
+    return new String(chars);
   }
  
 }
