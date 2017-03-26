@@ -1,8 +1,59 @@
 package sdes.attack;
 
+import java.util.Scanner;
+
 import sdes.SDES;
 
 public class SDESBruteforce {
+  
+  public static void main(String[] args) {
+    Scanner sc = new Scanner(System.in);
+    System.out.printf("Enter:%n  1 for CASCII Encryption%n  2 for CASCII SDES Bruteforce%n  3 for CASCII TripleSDES Bruteforce%n");
+    int choice = -1;
+    try {
+      choice = sc.nextInt(); 
+    } catch(Exception e) {}
+    switch(choice) {
+      case 1: CASCIIEncryption(sc); break;
+      default: System.out.println("Invalid choice, quitting.");
+    }
+  }
+  
+  public static void CASCIIEncryption(Scanner sc) {
+    System.out.println("Enter the bit representation of your key:");
+    char[] input = sc.next().toCharArray();
+    byte[] key = new byte[input.length];
+    for(int i = 0; i < input.length; i++) {
+      if(input[i] == '0') key[i] = 0;
+      else if(input[i] == '1') key[i] = 1;
+      else {
+        System.out.println("Invalid key, quitting.");
+        return;
+      }
+    }
+    
+    System.out.println("Enter your plaintext in CASCII:");
+    char[] plaintext = sc.next().toUpperCase().toCharArray();
+    
+    byte[][] encoded = encodeCASCII(plaintext);
+    
+  }
+  
+  public static byte[] padCASCII(byte[][] encodedCASCII) {
+    int padding = 8 - ((encodedCASCII.length * 5) % 8);
+    byte[] padded = new byte[padding + (encodedCASCII.length * 5)];
+    for(int i = 0; i < encodedCASCII.length; i++) {
+      for(int j = 0; j < 5; j++) {
+        padded[i + j] = encodedCASCII[i][j];
+      }
+    }
+    
+    for(int i = padded.length - padding; i < padded.length; i++) {
+      padded[i] = 0;
+    }
+    return padded;
+  }
+  
   public static byte[][] encodeCASCII(char[] chars) {
     byte[][] encoded = new byte[chars.length][5];
     for(int i = 0; i < chars.length; i++) {
@@ -70,4 +121,5 @@ public class SDESBruteforce {
     }
     return reversed;
   }
+ 
 }
