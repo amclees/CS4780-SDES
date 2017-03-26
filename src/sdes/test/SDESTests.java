@@ -4,9 +4,20 @@ import org.junit.Test;
 
 import junit.framework.TestCase;
 import sdes.SDES;
+import sdes.TripleSDES;
 import sdes.attack.SDESBruteforce;
 
 public class SDESTests extends TestCase {
+  
+  @Test
+  public void testTripleSDES() {
+    byte[] plaintext = randomGen(8);
+    byte[] key1 = randomGen(10);
+    byte[] key2 = randomGen(10);
+    byte[] ciphertext = TripleSDES.Encrypt(key1, key2, plaintext);
+    byte[] decrypted = TripleSDES.Decrypt(key1, key2, ciphertext);
+    assertTrue(bitsEqual(plaintext, decrypted));
+  }
   
   @Test
   public void testCasciiUtil() {
@@ -208,40 +219,40 @@ public class SDESTests extends TestCase {
   
   @Test
   public void testSDESLongForm() {
-  System.out.println("Long Form Encryption Test:");
-  byte[] key = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
-  byte[] plaintext = { 1, 0, 1, 0, 1, 0, 1, 0 };
-  System.out.print("Plain: ");
-  printArray(plaintext);
-  
-  byte[] initperm = SDES.permute(plaintext, SDES.initialPermutation);
-  System.out.print("IPerm: ");
-  printArray(initperm);
-  
-  byte[][] keys = SDES.getKeys(key);
-  System.out.print("Keys0: ");
-  printArray(keys[0]);
-  System.out.print("Keys1: ");
-  printArray(keys[1]);
-  
-  byte[] round1Result = SDES.mixKey(initperm, keys[0]);
-  System.out.print("Rnd1R: ");
-  printArray(round1Result);
-  
-  byte[] rnd1swp = SDES.swap(round1Result);
-  System.out.print("Rnd1S: ");
-  printArray(rnd1swp);
-  
-  byte[] round2Result = SDES.mixKey(rnd1swp, keys[1]);
-  System.out.print("Rnd2R: ");
-  printArray(round2Result);
-  
-  byte[] ciphertext = SDES.permute(round2Result, SDES.finalPermutation);
-  System.out.print("Ciphr: ");
-  printArray(ciphertext);
-  
-  byte[] expectedCiphertext = { 0, 0, 0, 0, 0, 1, 0, 0 };
-  assertTrue(bitsEqual(expectedCiphertext,ciphertext));
+    System.out.println("Long Form Encryption Test:");
+    byte[] key = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
+    byte[] plaintext = { 1, 0, 1, 0, 1, 0, 1, 0 };
+    System.out.print("Plain: ");
+    printArray(plaintext);
+    
+    byte[] initperm = SDES.permute(plaintext, SDES.initialPermutation);
+    System.out.print("IPerm: ");
+    printArray(initperm);
+    
+    byte[][] keys = SDES.getKeys(key);
+    System.out.print("Keys0: ");
+    printArray(keys[0]);
+    System.out.print("Keys1: ");
+    printArray(keys[1]);
+    
+    byte[] round1Result = SDES.mixKey(initperm, keys[0]);
+    System.out.print("Rnd1R: ");
+    printArray(round1Result);
+    
+    byte[] rnd1swp = SDES.swap(round1Result);
+    System.out.print("Rnd1S: ");
+    printArray(rnd1swp);
+    
+    byte[] round2Result = SDES.mixKey(rnd1swp, keys[1]);
+    System.out.print("Rnd2R: ");
+    printArray(round2Result);
+    
+    byte[] ciphertext = SDES.permute(round2Result, SDES.finalPermutation);
+    System.out.print("Ciphr: ");
+    printArray(ciphertext);
+    
+    byte[] expectedCiphertext = { 0, 0, 0, 0, 0, 1, 0, 0 };
+    assertTrue(bitsEqual(expectedCiphertext,ciphertext));
   }
   
   public boolean bitsEqual(byte[] b1, byte[] b2) {
