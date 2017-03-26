@@ -38,8 +38,8 @@ public class SDES {
     byte[] permutedCiphertext = permute(ciphertext, initialPermutation);
     byte[][] keys = getKeys(rawkey);
     
-    byte[] round1Result = mixKey(permutedCiphertext, keys[1]);
-    byte[] round2Result = swap(mixKey(round1Result, keys[0]));
+    byte[] round1Result = swap(mixKey(permutedCiphertext, keys[1]));
+    byte[] round2Result = mixKey(round1Result, keys[0]);
     
     byte[] plaintext = permute(round2Result, finalPermutation);
     
@@ -101,10 +101,22 @@ public class SDES {
     }
     return bits;
   }
-  
+ 
+  /*
   public static byte[] substitute(byte[] input, int[][] sBox) {
     byte[][] split = split(input);
     return intToBits(sBox[bitsToInt(split[0])][bitsToInt(split[1])], 2);
+  }
+  */
+  
+  // corrected substitution operation
+  public static byte[] substitute(byte[] input, int[][] sBox) {
+  int row;
+  int col;
+  row = 2*input[0] + input[3]; // uses first and last bit for row
+  col = 2*input[1] + input[2]; // uses second and third bit for column
+  
+  return intToBits(sBox[row][col], 2);
   }
 
   public static byte[] permute(byte[] input, int[] pBox) {
