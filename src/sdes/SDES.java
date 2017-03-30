@@ -46,6 +46,22 @@ public class SDES {
     return plaintext;
   }
   
+  public static byte[][] encryptBlocks(byte[] rawkey, byte[][] plaintext) {
+    byte[][] ciphertext = new byte[plaintext.length][8];
+    for(int i = 0; i < plaintext.length; i++) {
+      ciphertext[i] = Encrypt(rawkey, plaintext[i]);
+    }
+    return ciphertext;
+  }
+  
+  public static byte[][] decryptBlocks(byte[] rawkey, byte[][] ciphertext) {
+    byte[][] plaintext = new byte[ciphertext.length][8];
+    for(int i = 0; i < ciphertext.length; i++) {
+      plaintext[i] = Decrypt(rawkey, ciphertext[i]);
+    }
+    return plaintext;
+  }
+  
   public static byte[] mixKey(byte[] input, byte[] key) {
     // fsubk in notes
     byte[][] sides = split(input);

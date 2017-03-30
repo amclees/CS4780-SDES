@@ -1,20 +1,26 @@
 package sdes.attack;
 
+import java.util.PriorityQueue;
+import java.util.Queue;
 import java.util.Scanner;
+import java.util.Stack;
 
 import sdes.SDES;
+import sdes.TripleSDES;
+import sdes.attack.TripleSDESBruteforce.Possibility;
 
 public class SDESBruteforce {
   
   public static void main(String[] args) {
     Scanner sc = new Scanner(System.in);
-    System.out.printf("Enter:%n  1 for CASCII Encryption%n  2 for CASCII SDES Bruteforce%n  3 for CASCII TripleSDES Bruteforce%n");
+    System.out.printf("Enter:%n  1 for CASCII Encryption%n  2 for CASCII SDES Bruteforce%n  See other file for TripleSDES bruteforce%n");
     int choice = -1;
     try {
       choice = sc.nextInt(); 
     } catch(Exception e) {}
     switch(choice) {
       case 1: CASCIIEncryption(sc); break;
+      case 2: attackSDES(sc); break;
       default: System.out.println("Invalid choice, quitting.");
     }
   }
@@ -36,21 +42,72 @@ public class SDESBruteforce {
       }
     }
     
+    sc.nextLine();
     System.out.println("Enter your plaintext in CASCII:");
-    char[] plaintext = sc.next().toUpperCase().toCharArray();
+    char[] plaintext = sc.nextLine().toUpperCase().toCharArray();
     
     byte[][] encoded = encodeCASCII(plaintext);
     byte[] toEncrypt = padCASCII(encoded);
     System.out.println("Your padded plaintext is:\n" + bitsToString(toEncrypt));
     byte[][] toEncryptBlocks = blockify(toEncrypt, 8);
-    byte[][] ciphertextBlocks = new byte[toEncryptBlocks.length][8];
-    for(int i = 0; i < toEncryptBlocks.length; i++) {
-      ciphertextBlocks[i] = SDES.Encrypt(key, toEncryptBlocks[i]);
-    }
+    byte[][] ciphertextBlocks = SDES.encryptBlocks(key, toEncryptBlocks);
     byte[] ciphertext = flatten(ciphertextBlocks);
     
     System.out.println("Your ciphertext is:");
     System.out.println(bitsToString(ciphertext));
+    
+    System.out.println("Your decrypted plaintext is:");
+    System.out.println(bitsToString(flatten(SDES.decryptBlocks(key, ciphertextBlocks))));
+    byte[] flatDecryptedPlaintext = flatten(SDES.decryptBlocks(key, ciphertextBlocks));
+    char[] decodedPlaintext = decodeCASCII(blockify(flatDecryptedPlaintext, 5));
+    System.out.println(new String(decodedPlaintext));
+  }
+  
+  public static void attackSDES(Scanner sc) {
+    System.out.println("Please enter your ciphertext bits:");
+    byte[] ciphertext = parseBits(sc.next().toCharArray());
+    byte[][] ciphertextBlocks = blockify(ciphertext, 8);
+    Queue<Possibility> possible = new PriorityQueue<Possibility>();
+    for(int i = 0; i < 1024; i++) {
+      byte[] key = SDES.intToBits(i, 10);
+      byte[] decryptedPotential = SDESBruteforce.flatten(SDES.decryptBlocks(key, ciphertextBlocks));
+      String potentialPlaintext = new String(SDESBruteforce.decodeCASCII(SDESBruteforce.blockify(decryptedPotential, 5)));
+      Possibility currentPossibility = new Possibility(potentialPlaintext, key);
+      possible.add(currentPossibility);
+    }
+    for(int i = 0; i < 12; i++) {
+      System.out.println(possible.poll());
+    }
+  }
+  
+  public static class Possibility implements Comparable<Possibility> {
+    public String plaintext;
+    public byte[] key;
+    public int score;
+    
+    public Possibility(String plaintext, byte[] key) {
+     this.plaintext = plaintext; 
+     this.key = key;
+     int eCount = plaintext.length() - plaintext.replace("E", "").length();
+     int spaceCount = plaintext.length() - plaintext.replace(" ", "").length();
+     int thCount = plaintext.length() - plaintext.replace("TH", "").length();
+     int punctuationCount = 0;
+     punctuationCount += plaintext.length() - plaintext.replace(",", "").length();
+     punctuationCount += plaintext.length() - plaintext.replace(":", "").length();
+     punctuationCount += plaintext.length() - plaintext.replace("?", "").length();
+     punctuationCount += plaintext.length() - plaintext.replace(".", "").length();
+     
+     score = eCount + thCount + spaceCount - punctuationCount;
+    }
+
+    @Override
+    public int compareTo(Possibility other) {
+       return other.score - this.score;
+    }
+    
+    public String toString() { 
+      return "Score: " + score + " Key: (" + SDESBruteforce.bitsToString(key) + ") Plaintext: " + plaintext;
+    }
   }
   
   public static byte[] padCASCII(byte[][] encodedCASCII) {
@@ -58,7 +115,7 @@ public class SDESBruteforce {
     byte[] padded = new byte[padding + (encodedCASCII.length * 5)];
     for(int i = 0; i < encodedCASCII.length; i++) {
       for(int j = 0; j < 5; j++) {
-        padded[i + j] = encodedCASCII[i][j];
+        padded[(i * 5) + j] = encodedCASCII[i][j];
       }
     }
     
@@ -156,10 +213,10 @@ public class SDESBruteforce {
   }
   
   public static byte[][] blockify(byte[] flat, int blockSize) {
-    int padding = (blockSize - (flat.length % blockSize)) % blockSize;
-    int rows = (flat.length / blockSize) + (padding == 0 ? 0 : 1);
+    int padding = flat.length % blockSize;//(blockSize - (flat.length % blockSize)) % blockSize; // 4
+    int rows = flat.length / blockSize;// + (padding == 0 ? 0 : 1); // 3 + 1
     byte[][] blocks = new byte[rows][blockSize];
-    for(int i = 0; i < flat.length; i++) {
+    for(int i = 0; i < flat.length - padding; i++) {
       blocks[i / blockSize][i % blockSize] = flat[i];
     }
     return blocks;
