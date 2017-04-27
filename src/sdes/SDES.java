@@ -29,9 +29,7 @@ public class SDES {
     byte[] round1Result = swap(mixKey(permutedPlaintext, keys[0]));
     byte[] round2Result = mixKey(round1Result, keys[1]);
     
-    byte[] ciphertext = permute(round2Result, finalPermutation);
-    
-    return ciphertext;
+    return permute(round2Result, finalPermutation);
   }
   
   public static byte[] Decrypt(byte[] rawkey, byte[] ciphertext) {
@@ -41,9 +39,7 @@ public class SDES {
     byte[] round1Result = swap(mixKey(permutedCiphertext, keys[1]));
     byte[] round2Result = mixKey(round1Result, keys[0]);
     
-    byte[] plaintext = permute(round2Result, finalPermutation);
-    
-    return plaintext;
+    return permute(round2Result, finalPermutation);
   }
   
   public static byte[][] encryptBlocks(byte[] rawkey, byte[][] plaintext) {

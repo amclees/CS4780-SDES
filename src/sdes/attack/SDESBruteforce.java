@@ -3,13 +3,12 @@ package sdes.attack;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Scanner;
-import java.util.Stack;
 
 import sdes.SDES;
-import sdes.TripleSDES;
-import sdes.attack.TripleSDESBruteforce.Possibility;
 
 public class SDESBruteforce {
+  
+  private SDESBruteforce() {}
   
   public static void main(String[] args) {
     Scanner sc = new Scanner(System.in);
@@ -67,7 +66,7 @@ public class SDESBruteforce {
     System.out.println("Please enter your ciphertext bits:");
     byte[] ciphertext = parseBits(sc.next().toCharArray());
     byte[][] ciphertextBlocks = blockify(ciphertext, 8);
-    Queue<Possibility> possible = new PriorityQueue<Possibility>();
+    Queue<Possibility> possible = new PriorityQueue<>();
     for(int i = 0; i < 1024; i++) {
       byte[] key = SDES.intToBits(i, 10);
       byte[] decryptedPotential = SDESBruteforce.flatten(SDES.decryptBlocks(key, ciphertextBlocks));

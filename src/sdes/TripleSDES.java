@@ -2,6 +2,8 @@ package sdes;
 
 public class TripleSDES {
   
+  private TripleSDES() {}
+  
   public static byte[] Encrypt( byte[] rawkey1, byte[] rawkey2, byte[] plaintext ) {
     return SDES.Encrypt(rawkey1, SDES.Decrypt(rawkey2, SDES.Encrypt(rawkey1, plaintext)));
   }

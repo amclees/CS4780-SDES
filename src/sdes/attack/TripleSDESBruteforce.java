@@ -17,12 +17,13 @@ public class TripleSDESBruteforce {
     byte[] ciphertext = SDESBruteforce.parseBits(sc.next().toCharArray());
     long startTime = System.currentTimeMillis();
     byte[][] ciphertextBlocks = SDESBruteforce.blockify(ciphertext, 8);
-    Queue<Possibility> possible = new PriorityBlockingQueue<Possibility>();
-    List<Thread> threads = new ArrayList<Thread>(1024);
+    Queue<Possibility> possible = new PriorityBlockingQueue<>();
+    List<Thread> threads = new ArrayList<>(1024);
     
     for(int i = 0; i < 1024; i++) {
       byte[] key1 = SDES.intToBits(i, 10);
       Thread keyThread = (new Thread() {
+        @Override
         public void run() {
           for(int j = 0; j < 1024; j++) {
             byte[] key2 = SDES.intToBits(j, 10);
@@ -54,7 +55,7 @@ public class TripleSDESBruteforce {
     
     long elapsed = System.currentTimeMillis() - startTime;
     System.out.printf("%dms elapsed during bruteforce%n", elapsed);
-    
+    sc.close();
   }
   
   public static class Possibility implements Comparable<Possibility> {
@@ -82,6 +83,16 @@ public class TripleSDESBruteforce {
     @Override
     public int compareTo(Possibility other) {
        return other.score - this.score;
+    }
+    
+    @Override
+    public boolean equals(Object other) {
+      return other == this;
+    }
+    
+    @Override
+    public int hashCode() {
+      return plaintext.hashCode();
     }
     
     public String toString() { 

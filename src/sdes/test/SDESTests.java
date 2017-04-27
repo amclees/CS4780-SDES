@@ -62,7 +62,7 @@ public class SDESTests extends TestCase {
   @Test
   public void testSubstitutor() {
     byte[] input = { 1, 0, 0, 1 };
-    byte[] expectedOutput = { 1, 1 }; // corrected output test
+    byte[] expectedOutput = { 1, 1 }; // Corrected output test
     byte[] output = SDES.substitute(input, SDES.sBox1);
    
     assertEquals(expectedOutput[0], output[0]);
@@ -179,34 +179,28 @@ public class SDESTests extends TestCase {
   
   @Test
   public void testSDESDecryption() {
-  byte[] key = { 1, 1, 1, 0, 0, 0, 1, 1, 1, 0 };
-  byte[] ciphertext = { 1, 1, 0, 0, 1, 0, 1, 0 };
-  byte[] expectedPlaintext = { 1, 0, 1, 0, 1, 0, 1, 0};
-  byte[] plaintext = SDES.Decrypt(key, ciphertext);
-      
-  assertTrue(bitsEqual(expectedPlaintext, plaintext));
+    byte[] key = { 1, 1, 1, 0, 0, 0, 1, 1, 1, 0 };
+    byte[] ciphertext = { 1, 1, 0, 0, 1, 0, 1, 0 };
+    byte[] expectedPlaintext = { 1, 0, 1, 0, 1, 0, 1, 0};
+    byte[] plaintext = SDES.Decrypt(key, ciphertext);
+        
+    assertTrue(bitsEqual(expectedPlaintext, plaintext));
   }
   
   @Test
   public void testSDESEncryptDecrypt(){
     int testCount = 8;
-    // System.out.println("Encrypt > Decrypt Test ( " + testCount + " random runs ):");
+    
     for(int i = 0; i < testCount; i++) {
-      // System.out.println("Trial " + i + ":");
       assertTrue(testSDESende());
-      // System.out.println("");
     }
   }
   
   public boolean testSDESende(){
     byte[] key = randomGen(10);
-    // printArray(key);
     byte[] plaintext = randomGen(8);
-    // printArray(plaintext);
     byte[] ciphertext = SDES.Encrypt(key, plaintext);
-    // printArray(ciphertext);
     byte[] result = SDES.Decrypt(key, ciphertext);
-    // printArray(result);
     return bitsEqual(plaintext,result);
   }
   
@@ -256,54 +250,55 @@ public class SDESTests extends TestCase {
     System.out.println();
   }
   
-  /*
-1 0000000000     00000000     ?
-2 1111111111     11111111     ?
-3 0000011111     00000000     ?
-4 0000011111     11111111     ?
-5 1000101110     ?            00011100
-6 1000101110     ?            11000010
-7 0010011111     ?            10011101
-8 0010011111     ?            10010000
-  */
-  
+    /*
+      Table being tested:
+      1 0000000000     00000000     ?
+      2 1111111111     11111111     ?
+      3 0000011111     00000000     ?
+      4 0000011111     11111111     ?
+      5 1000101110     ?            00011100
+      6 1000101110     ?            11000010
+      7 0010011111     ?            10011101
+      8 0010011111     ?            10010000
+    */
   @Test
   public void testSDESresults(){
-  byte[] key1  = {0,0,0,0,0,0,0,0,0,0};
-  byte[] key2  = {1,1,1,1,1,1,1,1,1,1};
-  byte[] key34 = {0,0,0,0,0,1,1,1,1,1};
-  byte[] key56 = {1,0,0,0,1,0,1,1,1,0};
-  byte[] key78 = {0,0,1,0,0,1,1,1,1,1};
-  
-  byte[] plaintext13 = {0,0,0,0,0,0,0,0};
-  byte[] plaintext24 = {1,1,1,1,1,1,1,1};
-  
-  byte[] ciphertext5 = {0,0,0,1,1,1,0,0};
-  byte[] ciphertext6 = {1,1,0,0,0,0,1,0};
-  byte[] ciphertext7 = {1,0,0,1,1,1,0,1};
-  byte[] ciphertext8 = {1,0,0,1,0,0,0,0};
-  
-  System.out.println("Raw Key\t\tPlaintext\tCiphertext");
-  printTableRow(key1,plaintext13,SDES.Encrypt(key1,plaintext13));
-  printTableRow(key2,plaintext24,SDES.Encrypt(key2,plaintext24));
-  printTableRow(key34,plaintext13,SDES.Encrypt(key34,plaintext13));
-  printTableRow(key34,plaintext24,SDES.Encrypt(key34,plaintext24));
-  printTableRow(key56,SDES.Decrypt(key56,ciphertext5),ciphertext5);
-  printTableRow(key56,SDES.Decrypt(key56,ciphertext6),ciphertext6);
-  printTableRow(key78,SDES.Decrypt(key78,ciphertext7),ciphertext7);
-  printTableRow(key78,SDES.Decrypt(key78,ciphertext8),ciphertext8);
-  System.out.println();
+    byte[] key1  = {0,0,0,0,0,0,0,0,0,0};
+    byte[] key2  = {1,1,1,1,1,1,1,1,1,1};
+    byte[] key34 = {0,0,0,0,0,1,1,1,1,1};
+    byte[] key56 = {1,0,0,0,1,0,1,1,1,0};
+    byte[] key78 = {0,0,1,0,0,1,1,1,1,1};
+    
+    byte[] plaintext13 = {0,0,0,0,0,0,0,0};
+    byte[] plaintext24 = {1,1,1,1,1,1,1,1};
+    
+    byte[] ciphertext5 = {0,0,0,1,1,1,0,0};
+    byte[] ciphertext6 = {1,1,0,0,0,0,1,0};
+    byte[] ciphertext7 = {1,0,0,1,1,1,0,1};
+    byte[] ciphertext8 = {1,0,0,1,0,0,0,0};
+    
+    System.out.println("Raw Key\t\tPlaintext\tCiphertext");
+    printTableRow(key1, plaintext13, SDES.Encrypt(key1, plaintext13));
+    printTableRow(key2, plaintext24, SDES.Encrypt(key2, plaintext24));
+    printTableRow(key34, plaintext13, SDES.Encrypt(key34, plaintext13));
+    printTableRow(key34, plaintext24, SDES.Encrypt(key34, plaintext24));
+    printTableRow(key56, SDES.Decrypt(key56, ciphertext5), ciphertext5);
+    printTableRow(key56, SDES.Decrypt(key56, ciphertext6), ciphertext6);
+    printTableRow(key78, SDES.Decrypt(key78, ciphertext7), ciphertext7);
+    printTableRow(key78, SDES.Decrypt(key78, ciphertext8), ciphertext8);
+    System.out.println("");
   }
   
   /*
-1 0000000000     0000000000     00000000     ?
-2 1000101110     0110101110     11010111     ?
-3 1000101110     0110101110     10101010     ?
-4 1111111111     1111111111     10101010     ?
-5 1000101110     0110101110     ?            11100110
-6 1011101111     0110101110     ?            01010000
-7 0000000000     0000000000     ?            10000000
-8 1111111111     1111111111     ?            10010010
+    Table being tested:
+    1 0000000000     0000000000     00000000     ?
+    2 1000101110     0110101110     11010111     ?
+    3 1000101110     0110101110     10101010     ?
+    4 1111111111     1111111111     10101010     ?
+    5 1000101110     0110101110     ?            11100110
+    6 1011101111     0110101110     ?            01010000
+    7 0000000000     0000000000     ?            10000000
+    8 1111111111     1111111111     ?            10010010
   */
   
   @Test
@@ -336,29 +331,35 @@ public class SDESTests extends TestCase {
   }
   
   public boolean bitsEqual(byte[] b1, byte[] b2) {
-    if(b1.length != b2.length) return false;
-    for(int i = 0; i < b1.length; i++) {
-      if(b1[i] != b2[i]) return false;
+    if (b1.length != b2.length) {
+      return false;
+    }
+    for (int i = 0; i < b1.length; i++) {
+      if (b1[i] != b2[i]) {
+        return false;
+      }
     }
     return true;
   }
   
   public void printArray(byte[] input){
-    for(int i = 0; i < input.length; i++)
+    for (int i = 0; i < input.length; i++) {
       System.out.print(input[i]);
-    System.out.println();
+    }
+    System.out.println("");
   }
   
   public void printArrayNoLn(byte[] input){
-    for(int i = 0; i < input.length; i++)
+    for (int i = 0; i < input.length; i++) {
       System.out.print(input[i]);
+    }
   }
   
   public void printTableRow(byte[] ... arrays){
-  for(byte[] b : arrays){
-    printArrayNoLn(b);
-    System.out.print("\t");
-  }
-  System.out.println("");
+    for (byte[] b : arrays) {
+      printArrayNoLn(b);
+      System.out.print("\t");
+    }
+    System.out.println("");
   }
 }
